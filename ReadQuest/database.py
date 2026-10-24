@@ -89,6 +89,16 @@ def search_reading_sessions(connection, condition):
     except Exception as e:
         print(e)
 
+def delete_from_books(connection, id: int):
+    query = "DELETE FROM books WHERE id = ?"
+    try:
+        with connection:
+            connection.execute(query, (id))
+            print(f"Book at id {id} has been removed")
+    except Exception as e:
+        print(e)
+
+
 def user_continue():
     user_input = input("Do you wish to continue? (T/F)")
     if(user_input == "T"):
