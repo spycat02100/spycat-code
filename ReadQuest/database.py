@@ -93,10 +93,25 @@ def delete_from_books(connection, id: int):
     query = "DELETE FROM books WHERE id = ?"
     try:
         with connection:
-            connection.execute(query, (id))
+            connection.execute(query, (id,))
             print(f"Book at id {id} has been removed")
     except Exception as e:
         print(e)
+
+
+
+
+def set_in_books(connection, id: int, column, value):
+    query = f"UPDATE books SET {column} = ? WHERE id = ?"
+
+    try:
+        with connection:
+            connection.execute(query, (value, id))
+            print(f"{column} has been sucessfully updated. New value is {value}")
+    except Exception as e:
+        print(e)
+
+
 
 
 def user_continue():
@@ -132,6 +147,18 @@ def main():
                 elif start == "search":
                     condition = input("Enter a condition (To list all press enter): ")
                     print(search_books(connection, condition))
+                    if not user_continue():
+                        cont = False
+                elif start == "delete":
+                    id = int(input("Enter book id you would like to delete: "))
+                    delete_from_books(connection, id)
+                    if not user_continue():
+                        cont = False
+                elif start == "update":
+                    id = int(input("Enter book id: "))
+                    column = input("Enter column: ")
+                    value = input("Enter the value you want to set it to: ")
+                    set_in_books(connection, id, column, value)
                     if not user_continue():
                         cont = False
             elif table == "reading_sessions":
