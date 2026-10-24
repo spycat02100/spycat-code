@@ -56,12 +56,14 @@ def create_reading_session_table(connection):
     except Exception as e:
         print(e)
 
-def add_reading_session(connection, book_id: int, session_date: str, pages_read: int, minutes_read: int):
+def add_reading_session(connection, book_id: int, session_date: str, pages: int, minutes_read: int):
     query = "INSERT INTO reading_sessions (book_id, session_date, pages_read, minutes_read) VALUES (?, ?, ?, ?)"
+    query2 = "UPDATE books SET pages_read = pages_read + ? WHERE id = ? "
 
     try:
         with connection:
-            connection.execute(query, (book_id, session_date, pages_read, minutes_read))
+            connection.execute(query, (book_id, session_date, pages, minutes_read))
+            connection.execute(query2, (pages, book_id))
             print("Reading session added")
     except Exception as e:
         print(e)
@@ -84,7 +86,7 @@ def search_reading_sessions(connection, condition):
         query += f"WHERE {condition}"
     try:
         with connection:
-            result = connection.execute(query).findall()
+            result = connection.execute(query).fetchall()
             return result
     except Exception as e:
         print(e)
@@ -118,12 +120,30 @@ def set_in_books(connection, id: int, column, value):
         print(e)
 
 def set_reading_session(connection, id: int, column, value):
+    query0 = "SELECT pages_read FROM reading_sessions WHERE id = ?"
     query = f"UPDATE reading_sessions SET {column} = ? WHERE id = ?"
+
     
     try:
         with connection:
+            in_case = connection.execute(query0, id).fetchone()
+            in_case = in_case[0]
             connection.execute(query, (value, id))
             print(f"{column} has been sucessfully updated. New value is {value}")
+
+            if column == "pages_read":
+                query2 = "SELECT book_id FROM reading_sessions WHERE id = ?"
+                result = connection.execute(query2, (id,)).fetchone()
+
+                if result is None:
+                    print("Reading session not found.")
+                    return
+                book_id = result[0]
+                query3 = "UPDATE books SET pages_read = pages_read - ? WHERE id = ?"
+                query4 = "UPDATE books SET pages_read = pages_read + ? WHERE id = ?"
+                connection.execute(query3, (in_case, book_id))
+                connection.execute(query4, (value, book_id))
+
     except Exception as e:
         print(e)
 
