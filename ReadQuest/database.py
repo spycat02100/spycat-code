@@ -77,12 +77,25 @@ def search_books(connection, condition):
     except Exception as e:
         print(e)
 
+def search_reading_sessions(connection, condition):
+    query = "SELECT * FROM reading_sessions "
+
+    if condition:
+        query += f"WHERE {condition}"
+    try:
+        with connection:
+            result = connection.execute(query).findall()
+            return result
+    except Exception as e:
+        print(e)
+
 def user_continue():
     user_input = input("Do you wish to continue? (T/F)")
     if(user_input == "T"):
         return True 
     else:
         return False
+
 
 
 
@@ -96,7 +109,7 @@ def main():
         cont = True 
         while cont == True:
             table = input("Enter table (books, reading_sessions): ").lower()
-            start = input("Enter option (Add, Delete, Update, Search, List, Add Many): ").lower()
+            start = input("Enter option (Add, Delete, Update, Search, Add Many): ").lower()
             if table == "books":
                 if start == "add":
                     title = input("Enter title: ")
@@ -107,7 +120,7 @@ def main():
                     if not user_continue():
                         cont = False                  
                 elif start == "search":
-                    condition = input("Enter a condition: ")
+                    condition = input("Enter a condition (To list all press enter): ")
                     print(search_books(connection, condition))
                     if not user_continue():
                         cont = False
@@ -120,7 +133,11 @@ def main():
                     add_reading_session(connection, book_id, session_date, pages_read, minutes_read)
                     if not user_continue():
                         cont = False
-
+                elif start == "search":
+                    condition = input("Enter a condition (To list all press enter): ")
+                    print(search_reading_sessions(connection, condition))
+                    if not user_continue():
+                        cont = False
     finally:
         connection.close()
 
