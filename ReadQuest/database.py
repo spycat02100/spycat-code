@@ -66,8 +66,23 @@ def add_reading_session(connection, book_id: int, session_date: str, pages_read:
     except Exception as e:
         print(e)
 
+def search_books(connection, condition):
+    query = f"SELECT * from books "
+    if condition:
+        query += f"WHERE {condition} "
+    try:
+        with connection:
+            result = connection.execute(query).fetchall()
+            return result
+    except Exception as e:
+        print(e)
 
-
+def user_continue():
+    user_input = input("Do you wish to continue? (T/F)")
+    if(user_input == "T"):
+        return True 
+    else:
+        return False
 
 
 
@@ -78,22 +93,33 @@ def main():
     try:
         create_book_table(connection)
         create_reading_session_table(connection)
-        table = input("Enter table (books, reading_sessions): ").lower()
-        start = input("Enter option (Add, Delete, Update, Search, List, Add Many): ").lower()
-        if table == "books":
-            if start == "add":
-                title = input("Enter title: ")
-                author = input("Enter author: ")
-                page_count = int(input("Enter page count: "))
-                pages_read = int(input("Enter pages read: "))
-                insert_book(connection, title, author, page_count, pages_read)
-        elif table == "reading_sessions":
-            if start == "add":
-                book_id = int(input("Enter book id (If unknown use search with books table): "))
-                session_date = input("Enter session date: ")
-                pages_read = int(input("Enter pages read: "))
-                minutes_read = int(input("Enter minutes read: "))
-                add_reading_session(connection, book_id, session_date, pages_read, minutes_read)
+        cont = True 
+        while cont == True:
+            table = input("Enter table (books, reading_sessions): ").lower()
+            start = input("Enter option (Add, Delete, Update, Search, List, Add Many): ").lower()
+            if table == "books":
+                if start == "add":
+                    title = input("Enter title: ")
+                    author = input("Enter author: ")
+                    page_count = int(input("Enter page count: "))
+                    pages_read = int(input("Enter pages read: "))
+                    insert_book(connection, title, author, page_count, pages_read)
+                    if not user_continue():
+                        cont = False                  
+                elif start == "search":
+                    condition = input("Enter a condition: ")
+                    print(search_books(connection, condition))
+                    if not user_continue():
+                        cont = False
+            elif table == "reading_sessions":
+                if start == "add":
+                    book_id = int(input("Enter book id (If unknown use search with books table): "))
+                    session_date = input("Enter session date: ")
+                    pages_read = int(input("Enter pages read: "))
+                    minutes_read = int(input("Enter minutes read: "))
+                    add_reading_session(connection, book_id, session_date, pages_read, minutes_read)
+                    if not user_continue():
+                        cont = False
 
     finally:
         connection.close()
